@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual envs
+.venv/
+backend/.venv/
+training/.venv/
+uv.lock
+
+# Node / Next.js
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# Training data and outputs (raw dataset is not committed)
+training/train_data/
+training/test_data/
+training/outputs/
+*.pth
+
+# Deployed model artifacts (live in GitHub Releases, downloaded at runtime)
+backend/models/*.pt
+backend/models/*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Hydra runtime logs
+.hydra/
+
+train_data/
+test_data/

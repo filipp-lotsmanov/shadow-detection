@@ -1,0 +1,28 @@
+# Training settings:
+# - Trains on ALL annotated samples (no val holdout)
+# - Fixed-epoch cosine schedule, no early stopping
+# - 19 geometric features concatenated with the ResNet image features
+batch_size: 128
+num_epochs: 40
+num_workers: 4
+
+learning_rate: 3e-3
+backbone_lr: 3e-4
+weight_decay: 1e-4
+
+scheduler: cosine
+cosine_eta_min: 1e-6
+
+loss_weight_side: 1.0
+loss_weight_regression: 5.0
+loss_weight_direction: 1.0
+
+use_amp: true
+
+# Random seed used by torch / numpy / dataset shuffling. Change to reproduce
+# the same run from a different starting point.
+seed: 42
+
+# Below this threshold the direction head reports -1 (abstain) instead of
+# committing to a possibly-wrong class.
+direction_confidence_threshold: 0.6

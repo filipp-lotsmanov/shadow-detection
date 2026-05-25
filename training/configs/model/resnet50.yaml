@@ -1,0 +1,4 @@
+backbone: resnet50
+pretrained: true
+dropout: 0.3
+num_geo_features: 19

@@ -1,0 +1,15 @@
+# Top-level Hydra config for the shadow detection pipeline.
+# Compose with: python scripts/train.py [overrides...]
+defaults:
+  - _self_
+  - data: default
+  - model: resnet50
+  - training: default
+
+paths:
+  train_dir: ./train_data
+  test_dir: ./test_data
+  output_dir: ./outputs
+
+# Output directory becomes outputs/<run_name>/
+run_name: default
