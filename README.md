@@ -121,32 +121,58 @@ The deployed model is a single TorchScript-traced ResNet-50 (~50 MB).
 
 ```
 shadow-detection/
-+-- backend/                   FastAPI inference server
++-- backend/                       FastAPI inference server
 |   +-- app/
-|   |   +-- main.py            HTTP routes and CORS
-|   |   +-- inference.py       TorchScript model + TTA + bbox reconstruction
-|   |   +-- features.py        19 geometric features (copy of training-time impl)
-|   |   +-- schemas.py         Pydantic request/response models
-|   +-- models/                Populated at runtime from GitHub releases
-|   +-- pyproject.toml
-+-- frontend/                  Next.js 15 (App Router, JavaScript, CSS modules)
+|   |   +-- __init__.py
+|   |   +-- main.py                HTTP routes, CORS, model loading
+|   |   +-- inference.py           TorchScript model, TTA, bbox reconstruction
+|   |   +-- features.py            19 geometric features (matches training-time impl)
+|   |   +-- schemas.py             Pydantic request/response models
+|   +-- models/                    Populated at runtime from GitHub releases (model.pt + target_stats.json)
+|   +-- pyproject.toml             CPU PyTorch + FastAPI deps
++-- frontend/                      Next.js 15 (App Router, JavaScript, CSS modules)
 |   +-- app/
-|   |   +-- page.js            Main orchestration
+|   |   +-- page.js                Main orchestration
+|   |   +-- page.module.css
 |   |   +-- layout.js
 |   |   +-- globals.css
 |   +-- components/
-|   |   +-- ImageUploader.js   Drag-drop + sample gallery
-|   |   +-- PredictionViewer.js  Canvas-based bbox overlay
-|   |   +-- PredictionStats.js   Side panel with classification stats
-|   +-- public/samples/        8 demo images + ground-truth manifest
+|   |   +-- ImageUploader.js       Drag-drop + sample gallery
+|   |   +-- ImageUploader.module.css
+|   |   +-- PredictionViewer.js    Canvas-based bbox overlay
+|   |   +-- PredictionViewer.module.css
+|   |   +-- PredictionStats.js     Side panel with classification stats
+|   |   +-- PredictionStats.module.css
+|   +-- public/samples/            8 demo images + samples.json (ground-truth manifest)
 |   +-- package.json
-+-- training/                  Full training pipeline (Hydra-configured)
-|   +-- src/shadow_detection/  PyTorch package
-|   +-- scripts/               train.py, export_model.py, build_samples.py
-|   +-- configs/               Hydra YAML configs
-|   +-- README.md              Training-specific documentation
-+-- run.sh                     One-command launcher (Linux/macOS)
-+-- run.ps1                    One-command launcher (Windows)
+|   +-- package-lock.json
+|   +-- next.config.js
+|   +-- jsconfig.json
+|   +-- .env.local.example
++-- training/                      Full training pipeline (Hydra-configured)
+|   +-- src/shadow_detection/      PyTorch package
+|   |   +-- __init__.py
+|   |   +-- data.py                Annotation loading + target decomposition
+|   |   +-- dataset.py             Dataset + augmentation
+|   |   +-- features.py            19 geometric features
+|   |   +-- model.py               ResNet-50 + 3-head architecture
+|   |   +-- losses.py
+|   |   +-- metrics.py
+|   |   +-- gpu.py                 Free-GPU selection
+|   |   +-- runtime.py             Device / AMP / DataLoader helpers
+|   +-- scripts/
+|   |   +-- train.py               Training entry point
+|   |   +-- export_model.py        Checkpoint -> TorchScript for deployment
+|   |   +-- build_samples.py       Regenerate the demo gallery (maintainer tool)
+|   +-- configs/                   Hydra YAML configs (config, data, model, training)
+|   +-- setup.sh / setup.ps1       Environment setup (GPU autodetect, CPU fallback)
+|   +-- pyproject.toml             CUDA PyTorch deps
+|   +-- README.md                  Training-specific documentation
++-- docs/
+|   +-- demo.gif                   Demo preview shown above
++-- run.sh                         One-command launcher (Linux/macOS)
++-- run.ps1                        One-command launcher (Windows)
++-- LICENSE                        MIT
 +-- README.md
 ```
 
