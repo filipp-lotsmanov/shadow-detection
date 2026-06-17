@@ -77,7 +77,6 @@ uv run python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'
 Write-Host ""
 Write-Host "=== Setup complete ===" -ForegroundColor Green
 Write-Host "Train:   uv run python scripts/train.py"
-Write-Host "Predict: uv run python scripts/predict.py"
 Write-Host ""
 Write-Host "On CPU, smoke test first:"
 Write-Host "  uv run python scripts/train.py training.num_epochs=1 training.batch_size=16 run_name=smoke_cpu"

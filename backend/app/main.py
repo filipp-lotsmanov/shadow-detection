@@ -72,7 +72,7 @@ async def predict(file: UploadFile = File(...)) -> PredictionResponse:
         raise HTTPException(
             status_code=503,
             detail=(
-                "Model not loaded. Run 'uv run python ../scripts/export_model.py' first "
+                "Model not loaded. Run 'uv run python training/scripts/export_model.py' first "
                 "to populate backend/models/."
             ),
         )

@@ -128,7 +128,7 @@ shadow-detection/
 |   +-- package.json
 +-- training/                  Full training pipeline (Hydra-configured)
 |   +-- src/shadow_detection/  PyTorch package
-|   +-- scripts/               train.py, predict.py, export_model.py, build_samples.py
+|   +-- scripts/               train.py, export_model.py, build_samples.py
 |   +-- configs/               Hydra YAML configs
 |   +-- README.md              Training-specific documentation
 +-- run.sh                     One-command launcher (Linux/macOS)

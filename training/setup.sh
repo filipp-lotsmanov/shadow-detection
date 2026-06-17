@@ -68,7 +68,6 @@ uv run python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'
 echo ""
 echo "=== Setup complete ==="
 echo "Train:   uv run python scripts/train.py"
-echo "Predict: uv run python scripts/predict.py"
 echo ""
 echo "On CPU, smoke test first:"
 echo "  uv run python scripts/train.py training.num_epochs=1 training.batch_size=16 run_name=smoke_cpu"

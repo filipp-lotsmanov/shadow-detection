@@ -13,13 +13,11 @@ Detects an NVIDIA GPU and installs the CUDA 12.4 PyTorch build if available, or 
 
 ## Data layout
 
-Place the dataset under `training/`:
+Place the training data under `training/`:
 
 ```
 training/
 +-- train_data/             image+annotation pairs (.png + .json)
-+-- test_data/              .png files for the held-out test set
-+-- submission_example.csv  test-set row order + CSV format
 ```
 
 ## Training
@@ -33,14 +31,6 @@ Outputs land in `outputs/<run_name>/`:
 
 - `model.pth` - trained PyTorch state dict
 - `target_stats.pth` - regression-target normalization stats used at inference
-
-## Test-set prediction
-
-```bash
-uv run python scripts/predict.py
-```
-
-Loads `outputs/<run_name>/model.pth`, runs over the test set with horizontal-flip test-time augmentation, and writes `outputs/<run_name>/submission.csv`.
 
 ## Exporting for deployment
 

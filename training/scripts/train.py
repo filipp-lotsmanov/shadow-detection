@@ -65,7 +65,7 @@ def main(cfg: DictConfig) -> None:
     for k, v in target_stats.items():
         print(f"  {k:>20s}: mean={v['mean']:.2f}, std={v['std']:.2f}")
 
-    # Save normalization stats so predict.py can denormalize at inference time
+    # Save normalization stats so inference can denormalize regression outputs
     torch.save(target_stats, save_dir / "target_stats.pth")
 
     ds = ShadowDataset(
