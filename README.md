@@ -156,8 +156,6 @@ shadow-detection/
 |   |   +-- dataset.py             Dataset + augmentation
 |   |   +-- features.py            19 geometric features
 |   |   +-- model.py               ResNet-50 + 3-head architecture
-|   |   +-- losses.py
-|   |   +-- metrics.py
 |   |   +-- gpu.py                 Free-GPU selection
 |   |   +-- runtime.py             Device / AMP / DataLoader helpers
 |   +-- scripts/

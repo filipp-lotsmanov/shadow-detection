@@ -8,7 +8,6 @@ defaults:
 
 paths:
   train_dir: ./train_data
-  test_dir: ./test_data
   output_dir: ./outputs
 
 # Output directory becomes outputs/<run_name>/

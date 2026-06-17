@@ -1,17 +1,11 @@
-# v5 data settings - 384x384 input (matches the winning hackathon config)
+# Data settings. Input images are 720 wide; the model resizes to 384x384.
 img_w: 720
-img_h: 480
 
 input_size: [384, 384]
 
+# ImageNet-style normalization stats computed on the training set.
 channel_means: [0.422, 0.413, 0.394]
 channel_stds: [0.167, 0.174, 0.233]
 
-val_split: 0.0   # v5 trains on all data - no val holdout
-
+# Probability of applying the horizontal flip (with label mirroring) per sample.
 flip_prob: 0.5
-color_jitter: true
-gaussian_blur: true
-
-# v5 specific
-num_geo_features: 19
