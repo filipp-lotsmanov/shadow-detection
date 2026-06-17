@@ -40,3 +40,6 @@ Thumbs.db
 
 train_data/
 test_data/
+
+# Release artifacts (uploaded to GitHub Releases, not committed)
+*.tar.gz
