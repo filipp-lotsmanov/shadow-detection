@@ -178,7 +178,7 @@ The trained model is bundled via GitHub releases so reviewers don't need a GPU t
 
 ## Team
 
-The winning hackathon submission was a joint effort with Aliaksandr Krasnoshtanov and Daniil Sysenko. The 3-head decomposed-target architecture, 19 hand-crafted geometric features, flip-aware augmentation, and TTA inference were my contributions. Daniil and Aliaksandr ran complementary models in parallel; the original hackathon submission was a weighted blend of all of our individual best results.
+The winning hackathon submission was a joint effort with Oleksii Krasnoshtanov and Danil Sysenko. The 3-head decomposed-target architecture, 19 hand-crafted geometric features, flip-aware augmentation, and TTA inference were my contributions. Danil and Oleksii ran complementary models in parallel; the original hackathon submission was a weighted blend of all of our individual best results.
 
 ## Limitations
 
