@@ -1,5 +1,13 @@
 # Shadow Detection
 
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.6-EE4C2C?logo=pytorch&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![uv](https://img.shields.io/badge/uv-package%20manager-DE5FE9?logo=uv&logoColor=white)
+![Hydra](https://img.shields.io/badge/Hydra-config-89B8CD)
+
 > Predicting off-screen pedestrian locations from shadow imagery.
 > Winning solution for the **BrabantHack 2026 DEMCON Deep Tech track** with **IoU 0.626** on the official test set.
 
@@ -7,15 +15,21 @@ The task: given a single 720x480 image of a road scene where a pedestrian is *no
 
 This repository contains a runnable demo plus the full training pipeline.
 
+![Demo preview](docs/demo.gif)
+
 ## Quick start
 
-Prerequisites: Python 3.10+ and Node.js 20+ on your PATH. Everything else (uv, Python deps, npm deps, the trained model) is installed on first run.
+> **Prerequisites.** You must have **Python 3.10+** and **Node.js 20+** installed and on your PATH *before* running the launch script. These are not auto-installed. Everything else (uv, Python dependencies, npm dependencies, and the trained model) is set up automatically on first run.
+>
+> - Python: https://www.python.org/downloads/
+> - Node.js (LTS): https://nodejs.org/
 
 **Linux / macOS:**
 
 ```bash
 git clone https://github.com/filipp-lotsmanov/shadow-detection.git
 cd shadow-detection
+chmod +x run.sh
 ./run.sh
 ```
 
@@ -165,3 +179,11 @@ The trained model is bundled via GitHub releases so reviewers don't need a GPU t
 ## Team
 
 The winning hackathon submission was a joint effort with Aliaksandr Krasnoshtanov and Daniil Sysenko. The 3-head decomposed-target architecture, 19 hand-crafted geometric features, flip-aware augmentation, and TTA inference were my contributions. Daniil and Aliaksandr ran complementary models in parallel; the original hackathon submission was a weighted blend of all of our individual best results.
+
+## Limitations
+
+A few honest caveats about what this model can and cannot do:
+
+- **Direction prediction is unreliable.** The side classifier (left/right of frame) is effectively solved at ~100% accuracy, and bounding-box regression is strong, but the "walking into vs out of frame" head only reaches 65-70% at its best and often sits in the 50-60% range. Shadow shape carries weak signal about walking direction, so this output should be treated as a low-confidence hint rather than a reliable prediction. The inference path abstains (returns `-1`) below a confidence threshold for this reason.
+- **Trained and evaluated on synthetic data only.** The entire dataset is computer-generated. The model has never seen a real photograph, and real-world generalization is untested. Lighting, shadow softness, ground textures, and camera characteristics in real scenes differ from the synthetic distribution in ways that would likely degrade performance.
+- **No held-out ground-truth test set.** The IoU 0.626 figure comes from the competition leaderboard, which scored a hidden test set. Locally there is no ground-truth test split, so internal validation during the hackathon was indirect (via leaderboard submissions). The model trains on all available annotated samples.

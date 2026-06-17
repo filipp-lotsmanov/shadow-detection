@@ -5,6 +5,7 @@ This subdirectory contains the PyTorch + Hydra training pipeline that produces t
 ## Setup
 
 ```bash
+chmod +x setup.sh         # Linux/macOS only, first time
 ./setup.sh                # Linux/macOS
 .\setup.ps1               # Windows PowerShell
 ```
@@ -23,14 +24,16 @@ training/
 ## Training
 
 ```bash
-uv run python scripts/train.py                                  # full training run
-uv run python scripts/train.py training.num_epochs=2 run_name=smoke   # quick smoke test
+uv run python scripts/train.py                                              # full training run
+uv run python scripts/train.py training.num_epochs=2 training.batch_size=16 run_name=smoke   # quick smoke test
 ```
 
 Outputs land in `outputs/<run_name>/`:
 
 - `model.pth` - trained PyTorch state dict
 - `target_stats.pth` - regression-target normalization stats used at inference
+
+The default batch size of 128 targets a large GPU (the deployment model was trained on an NVIDIA L40S). On a smaller card (e.g. 6 GB), lower it with `training.batch_size=16` to avoid running out of memory.
 
 ## Exporting for deployment
 
