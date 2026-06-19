@@ -84,7 +84,7 @@ export default function ImageUploader({ onSelect, activeId }) {
       {samples.length > 0 && (
         <>
           <div className={styles.galleryTitle}>
-            Or pick a held-out sample (with ground truth)
+            Or pick a sample image (with ground truth)
           </div>
           <div className={styles.gallery}>
             {samples.map((s) => (

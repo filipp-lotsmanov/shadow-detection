@@ -1,5 +1,6 @@
-"""Build the demo gallery: pick 8 held-out training samples, copy images + GT
-into frontend/public/samples/, write a samples.json manifest the frontend loads.
+"""Build the demo gallery: pick 8 sample images from the training set, copy
+images + GT into frontend/public/samples/, write a samples.json manifest the
+frontend loads.
 
 Run once after training the model. Re-run any time you want to refresh the gallery.
 

@@ -18,7 +18,7 @@ import torch.nn.functional as F
 from PIL import Image
 from torchvision import transforms
 
-from .features import extract_geometric_features
+from .features import extract_geometric_features, flip_geometric_features
 
 # Constants must match training-time settings exactly.
 IMG_W = 720
@@ -27,8 +27,6 @@ INPUT_SIZE = (384, 384)  # (H, W)
 CHANNEL_MEANS = [0.422, 0.413, 0.394]
 CHANNEL_STDS = [0.167, 0.174, 0.233]
 DIRECTION_CONFIDENCE_THRESHOLD = 0.6
-GEO_FLIP_BIN_PAIRS = [(0, 1), (11, 12)]  # indices that swap under horizontal flip
-GEO_MIRROR_INDICES = [3, 8, 9, 10]  # indices that map x -> 1 - x
 
 
 class PredictionDict(TypedDict):
@@ -43,17 +41,6 @@ class PredictionDict(TypedDict):
     image_width: int
     image_height: int
     inference_ms: float
-
-
-def flip_geometric_features(geo: np.ndarray) -> np.ndarray:
-    """Mirror the 19 features to match a horizontally flipped image."""
-    g = geo.copy()
-    for a, b in GEO_FLIP_BIN_PAIRS:
-        g[a], g[b] = geo[b], geo[a]
-    g[2] = g[0] / (g[1] + 1e-6)
-    for i in GEO_MIRROR_INDICES:
-        g[i] = 1 - geo[i]
-    return g
 
 
 class ShadowDetector:

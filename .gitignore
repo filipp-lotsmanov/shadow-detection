@@ -9,7 +9,6 @@ __pycache__/
 .venv/
 backend/.venv/
 training/.venv/
-uv.lock
 
 # Node / Next.js
 node_modules/

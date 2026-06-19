@@ -1,0 +1,57 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    name: ${{ matrix.package }} tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: training
+            deps: numpy scipy pillow
+          - package: backend
+            deps: pydantic
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v6
+
+      - name: Install uv and Python 3.10
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: "3.10"
+          enable-cache: true
+
+      # The test suites are torch-free by design: the training tests need only
+      # numpy/scipy/pillow and the backend tests need only pydantic. A full
+      # `uv sync` would download the large CUDA-pinned PyTorch wheels that the
+      # tests never import, so CI installs just the dependencies they exercise.
+      - name: Create the virtual environment
+        working-directory: ${{ matrix.package }}
+        run: uv venv
+
+      - name: Install test dependencies
+        working-directory: ${{ matrix.package }}
+        run: uv pip install pytest ${{ matrix.deps }}
+
+      - name: Install the local package without its dependencies
+        working-directory: ${{ matrix.package }}
+        run: uv pip install -e . --no-deps
+
+      - name: Run pytest
+        working-directory: ${{ matrix.package }}
+        run: uv run --no-sync pytest

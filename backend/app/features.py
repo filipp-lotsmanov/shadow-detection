@@ -70,3 +70,23 @@ def extract_geometric_features(img_array: np.ndarray) -> np.ndarray:
         f[18] = np.percentile(r2[m2], 90) / 100
 
     return f
+
+
+def flip_geometric_features(geo: np.ndarray) -> np.ndarray:
+    """Mirror the 19 features to match a horizontally flipped image.
+
+    Returns a NEW array - does not mutate the input. Use after flipping the image
+    so the geometric features are consistent with the flipped pixels.
+    """
+    g = geo.copy()
+    # Swap left/right pairs
+    g[0], g[1] = geo[1], geo[0]
+    g[2] = g[0] / (g[1] + 1e-6)
+    # Mirror x-coordinates around 0.5
+    g[3] = 1 - geo[3]
+    g[8] = 1 - geo[8]
+    g[9] = 1 - geo[9]
+    g[10] = 1 - geo[10]
+    # Swap left/right edge density
+    g[11], g[12] = geo[12], geo[11]
+    return g

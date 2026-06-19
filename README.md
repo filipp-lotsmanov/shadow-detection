@@ -1,6 +1,6 @@
 # Shadow Detection
 
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.6-EE4C2C?logo=pytorch&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=next.js&logoColor=white)
@@ -19,7 +19,7 @@ This repository contains a runnable demo plus the full training pipeline.
 
 ## Quick start
 
-> **Prerequisites.** You must have **Python 3.10+** and **Node.js 20+** installed and on your PATH *before* running the launch script. These are not auto-installed. Everything else (uv, Python dependencies, npm dependencies, and the trained model) is set up automatically on first run.
+> **Prerequisites.** You must have **Python 3.10** (the 3.10 series; 3.11 and newer are not currently supported) and **Node.js 20+** installed and on your PATH *before* running the launch script. These are not auto-installed. Everything else (uv, Python dependencies, npm dependencies, and the trained model) is set up automatically on first run.
 >
 > - Python: https://www.python.org/downloads/
 > - Node.js (LTS): https://nodejs.org/
@@ -46,7 +46,7 @@ First run downloads the trained model (~50 MB) and installs dependencies (~500 M
 
 ## What you'll see
 
-A demo page where you can either upload your own shadow image or pick from 8 bundled held-out samples (which have ground-truth bounding boxes for comparison). The page renders:
+A demo page where you can either upload your own shadow image or pick from 8 bundled sample images (which have ground-truth bounding boxes for comparison). The page renders:
 
 - The input image with the predicted bounding box overlay (red), and the ground-truth bbox (green) if the sample has one
 - Side classification (left vs right of frame) with confidence
