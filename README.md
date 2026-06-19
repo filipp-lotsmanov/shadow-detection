@@ -44,6 +44,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 First run downloads the trained model (~50 MB) and installs dependencies (~500 MB), so it takes 3-5 minutes. Subsequent runs start in seconds. When ready, open `http://localhost:3000` in your browser.
 
+The frontend calls the backend at `http://localhost:8000` by default. If you run the backend elsewhere (a different port, or a remote server such as a Coder workspace accessed via web URLs), copy `frontend/.env.local.example` to `frontend/.env.local`, set `NEXT_PUBLIC_API_URL` to the backend's reachable address, and restart `npm run dev`. When the frontend is served from a non-`localhost` origin you must also allow that origin in the backend's CORS configuration (`backend/app/main.py`), which permits `localhost` only by default.
+
 ## What you'll see
 
 A demo page where you can either upload your own shadow image or pick from 8 bundled sample images (which have ground-truth bounding boxes for comparison). The page renders:
