@@ -2,12 +2,9 @@
 
 [![ci](https://github.com/filipp-lotsmanov/shadow-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/filipp-lotsmanov/shadow-detection/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.6-EE4C2C?logo=pytorch&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
-![uv](https://img.shields.io/badge/uv-package%20manager-DE5FE9?logo=uv&logoColor=white)
-![Hydra](https://img.shields.io/badge/Hydra-config-89B8CD)
 
 > Predicting off-screen pedestrian locations from shadow imagery.
 > Winning solution for the **BrabantHack 2026 DEMCON Deep Tech track** with **IoU 0.626** on the official test set.
