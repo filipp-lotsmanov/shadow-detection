@@ -8,6 +8,10 @@ import styles from "./page.module.css";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// Cold start is dominated by importing torch, so allow ~30s of grace.
+const HEALTH_RETRY_MS = 2000;
+const HEALTH_MAX_ATTEMPTS = 15;
+
 export default function HomePage() {
   const [selection, setSelection] = useState(null);
   const [prediction, setPrediction] = useState(null);
@@ -15,19 +19,40 @@ export default function HomePage() {
   const [error, setError] = useState(null);
   const [health, setHealth] = useState({ checked: false, status: "unknown", device: "" });
 
+  // Poll /health until the backend answers, rather than checking once on mount.
+  // The launch scripts start the backend and the frontend together, so the
+  // first request can easily land before the model has finished loading; a
+  // single failed check would otherwise leave a permanent "unreachable"
+  // banner until the user reloaded by hand.
   useEffect(() => {
-    fetch(`${API_URL}/health`)
-      .then((r) => r.json())
-      .then((d) =>
+    let cancelled = false;
+    let timer;
+
+    async function check(attempt) {
+      try {
+        const d = await fetch(`${API_URL}/health`).then((r) => r.json());
+        if (cancelled) return;
         setHealth({
           checked: true,
           status: d.model_loaded ? "ok" : d.status,
           device: d.device,
-        })
-      )
-      .catch(() =>
-        setHealth({ checked: true, status: "unreachable", device: "" })
-      );
+        });
+        // A running server with no model won't fix itself; stop polling.
+        if (d.model_loaded) return;
+      } catch {
+        if (cancelled) return;
+        setHealth({ checked: true, status: "unreachable", device: "" });
+      }
+      if (attempt < HEALTH_MAX_ATTEMPTS) {
+        timer = setTimeout(() => check(attempt + 1), HEALTH_RETRY_MS);
+      }
+    }
+
+    check(1);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   const runPrediction = useCallback(async (sel) => {

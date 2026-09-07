@@ -21,6 +21,34 @@ import numpy as np
 from PIL import Image
 
 
+def decompose_bbox(
+    xmin: float, ymin: float, xmax: float, ymax: float, img_w: int
+) -> dict[str, float]:
+    """Split a raw bbox into the targets the model actually predicts.
+
+    The pedestrian is always off-frame, so the sign of xmin says which edge
+    they are past, and the distance is measured from that edge. Everything
+    else is symmetric between the two sides, which is what lets a single
+    regressor handle both.
+
+    The inverse of this lives in the backend as app.geometry.reconstruct_bbox.
+    """
+    if xmin < 0:
+        side = 0
+        distance_from_edge = abs(xmin)
+    else:
+        side = 1
+        distance_from_edge = xmax - img_w
+
+    return {
+        "side": side,
+        "distance_from_edge": distance_from_edge,
+        "bbox_width": xmax - xmin,
+        "bbox_height": ymax - ymin,
+        "y_center": (ymin + ymax) / 2.0,
+    }
+
+
 def _verify_decomposition(samples: list[dict[str, Any]], img_w: int) -> None:
     """Sanity check - reconstruct bbox from decomposed values and compare."""
     for s in samples[:3]:
@@ -66,16 +94,7 @@ def load_annotations_with_features(
         xmin, ymin = float(tl[0]), float(tl[1])
         xmax, ymax = float(br[0]), float(br[1])
 
-        width = xmax - xmin
-        height = ymax - ymin
-        y_center = (ymin + ymax) / 2.0
-
-        if xmin < 0:
-            side = 0
-            distance_from_edge = abs(xmin)
-        else:
-            side = 1
-            distance_from_edge = xmax - img_w
+        targets = decompose_bbox(xmin, ymin, xmax, ymax, img_w)
 
         # Precompute geometric features from the image
         img = np.array(Image.open(png_files[fname]).convert("RGB"))
@@ -89,11 +108,7 @@ def load_annotations_with_features(
                 "ymin": ymin,
                 "xmax": xmax,
                 "ymax": ymax,
-                "side": side,
-                "distance_from_edge": distance_from_edge,
-                "bbox_width": width,
-                "bbox_height": height,
-                "y_center": y_center,
+                **targets,
                 "direction": int(ann["walking_into_frame_bool"]),
                 "geo": geo,
             }

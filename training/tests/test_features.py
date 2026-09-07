@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+
 from shadow_detection.features import extract_geometric_features, flip_geometric_features
 
 
@@ -43,12 +44,12 @@ def test_flip_is_involution(shadow_image):
 def test_flip_mirrors_x_features():
     """Flipping swaps the left/right pairs and mirrors x-coordinates around 0.5."""
     geo = np.zeros(19, dtype=np.float32)
-    geo[0], geo[1] = 0.2, 0.8        # left/right bottom-strip intensities
-    geo[3] = 0.25                    # x-centroid
-    geo[8] = 0.30                    # left/right mass ratio
-    geo[9] = 0.40                    # argmax column density
-    geo[10] = 0.45                   # weighted-mean column density
-    geo[11], geo[12] = 0.10, 0.60    # left/right edge density
+    geo[0], geo[1] = 0.2, 0.8  # left/right bottom-strip intensities
+    geo[3] = 0.25  # x-centroid
+    geo[8] = 0.30  # left/right mass ratio
+    geo[9] = 0.40  # argmax column density
+    geo[10] = 0.45  # weighted-mean column density
+    geo[11], geo[12] = 0.10, 0.60  # left/right edge density
 
     g = flip_geometric_features(geo)
 

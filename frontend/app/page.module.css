@@ -61,18 +61,7 @@
   background: var(--error);
 }
 
-.section {
-  margin-top: 48px;
-}
 
-.sectionTitle {
-  font-size: 12px;
-  font-family: var(--mono);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-dim);
-  margin-bottom: 18px;
-}
 
 .errorBanner {
   margin-top: 24px;

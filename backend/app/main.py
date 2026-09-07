@@ -7,14 +7,15 @@ Endpoints:
 
 from __future__ import annotations
 
-import io
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image
 
+from .images import ImageDecodeError, ImageTooSmallError, decode_upload, ensure_min_size
 from .inference import ShadowDetector
 from .schemas import BBox, HealthResponse, PredictionResponse
 
@@ -27,10 +28,31 @@ STATS_PATH = MODELS_DIR / "target_stats.json"
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 
+detector: ShadowDetector | None = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Load the model once, at startup.
+
+    A missing model is not fatal: the server comes up anyway and /health
+    reports model_loaded=false, so the operator can see they still need to run
+    the export script (or let run.sh fetch the release artifact).
+    """
+    global detector
+    try:
+        detector = ShadowDetector(MODEL_PATH, STATS_PATH)
+        log.info("Model loaded on device=%s", detector.device)
+    except FileNotFoundError as e:
+        log.error("Model files missing: %s", e)
+    yield
+
+
 app = FastAPI(
     title="Shadow Detector API",
     description="Predicts off-screen pedestrian bounding boxes from shadow imagery.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Permissive CORS for local development. The frontend runs on port 3000 by
@@ -44,19 +66,6 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
-detector: ShadowDetector | None = None
-
-
-@app.on_event("startup")
-def _load_model() -> None:
-    global detector
-    try:
-        detector = ShadowDetector(MODEL_PATH, STATS_PATH)
-        log.info("Model loaded on device=%s", detector.device)
-    except FileNotFoundError as e:
-        log.error("Model files missing: %s", e)
-        # Server starts; /health reports model_loaded=False so the user knows to export
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -87,16 +96,19 @@ async def predict(file: UploadFile = File(...)) -> PredictionResponse:
         raise HTTPException(status_code=413, detail=f"File exceeds {MAX_UPLOAD_BYTES} bytes")
 
     try:
-        image = Image.open(io.BytesIO(raw))
-    except Exception as e:
+        image = decode_upload(raw)
+    except ImageDecodeError as e:
         raise HTTPException(status_code=400, detail=f"Could not decode image: {e}") from e
+
+    try:
+        ensure_min_size(image)
+    except ImageTooSmallError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
 
     pred = detector.predict(image)
 
     return PredictionResponse(
-        bbox=BBox(
-            xmin=pred["xmin"], ymin=pred["ymin"], xmax=pred["xmax"], ymax=pred["ymax"]
-        ),
+        bbox=BBox(xmin=pred["xmin"], ymin=pred["ymin"], xmax=pred["xmax"], ymax=pred["ymax"]),
         side=pred["side"],
         side_confidence=pred["side_confidence"],
         direction=pred["direction"],

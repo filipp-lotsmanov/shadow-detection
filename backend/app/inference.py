@@ -19,10 +19,9 @@ from PIL import Image
 from torchvision import transforms
 
 from .features import extract_geometric_features, flip_geometric_features
+from .geometry import reconstruct_bbox
 
 # Constants must match training-time settings exactly.
-IMG_W = 720
-IMG_H = 480
 INPUT_SIZE = (384, 384)  # (H, W)
 CHANNEL_MEANS = [0.422, 0.413, 0.394]
 CHANNEL_STDS = [0.167, 0.174, 0.233]
@@ -68,10 +67,6 @@ class ShadowDetector:
             ]
         )
 
-    def _denormalize(self, value: float, key: str) -> float:
-        s = self.target_stats[key]
-        return value * (s["std"] + 1e-8) + s["mean"]
-
     @torch.no_grad()
     def predict(self, image: Image.Image) -> PredictionDict:
         """Run TTA prediction on a single PIL image."""
@@ -111,26 +106,15 @@ class ShadowDetector:
         side = int(sp.argmax())
         side_confidence = float(sp.max())
 
-        # Reconstruct bbox from decomposed values
-        dist = max(self._denormalize(float(rp[0]), "distance_from_edge"), 0.0)
-        bw = max(self._denormalize(float(rp[1]), "bbox_width"), 10.0)
-        bh = max(self._denormalize(float(rp[2]), "bbox_height"), 50.0)
-        yc = self._denormalize(float(rp[3]), "y_center")
-
-        if side == 0:
-            xmin = -dist
-            xmax = xmin + bw
-        else:
-            xmax = IMG_W + dist
-            xmin = xmax - bw
-        ymin = yc - bh / 2
-        ymax = yc + bh / 2
-
-        # Scale bbox to actual uploaded image dimensions if it isn't 720x480
-        sx = original_w / IMG_W
-        sy = original_h / IMG_H
-        xmin, xmax = xmin * sx, xmax * sx
-        ymin, ymax = ymin * sy, ymax * sy
+        # Reconstruct the bbox from the decomposed values and scale it to the
+        # uploaded image if it isn't 720x480. See app/geometry.py.
+        xmin, ymin, xmax, ymax = reconstruct_bbox(
+            side=side,
+            reg=(float(rp[0]), float(rp[1]), float(rp[2]), float(rp[3])),
+            target_stats=self.target_stats,
+            image_width=original_w,
+            image_height=original_h,
+        )
 
         dir_confidence = float(dp.max())
         direction = int(dp.argmax()) if dir_confidence > DIRECTION_CONFIDENCE_THRESHOLD else -1

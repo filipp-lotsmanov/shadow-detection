@@ -55,8 +55,8 @@ def extract_geometric_features(img_array: np.ndarray) -> np.ndarray:
     f = np.zeros(19, dtype=np.float32)
 
     # Bottom-strip intensities (left/right corners)
-    f[0] = np.mean(gray[int(H * 0.625):, :20]) / 255
-    f[1] = np.mean(gray[int(H * 0.625):, -20:]) / 255
+    f[0] = np.mean(gray[int(H * 0.625) :, :20]) / 255
+    f[1] = np.mean(gray[int(H * 0.625) :, -20:]) / 255
     f[2] = f[0] / (f[1] + 1e-6)
 
     ys, xs = np.where(road)
@@ -77,6 +77,11 @@ def extract_geometric_features(img_array: np.ndarray) -> np.ndarray:
         f[11] = np.sum(road[:, :30]) / (road.shape[0] * 30)
         f[12] = np.sum(road[:, -30:]) / (road.shape[0] * 30)
 
+        # NOTE: when 50 < len(xs) <= 100 this stays 0.0, whereas the else
+        # branch below fills f[3:14] with 0.5. Two different encodings for
+        # "unknown" in the same feature. Left as-is deliberately: the released
+        # weights were trained against exactly this behaviour, so changing it
+        # would silently shift the served feature distribution.
         if len(xs) > 100:
             cov = np.cov(xs - np.mean(xs), ys - np.mean(ys))
             _, ev = np.linalg.eigh(cov)
@@ -87,7 +92,7 @@ def extract_geometric_features(img_array: np.ndarray) -> np.ndarray:
     # Blur-difference shadow scores (further isolates dark regions)
     bl2 = gaussian_filter(gray, sigma=20)
     sd = bl2 - gray
-    r2 = sd[int(H * 0.58):, :]
+    r2 = sd[int(H * 0.58) :, :]
     m2 = r2 > 8
     y2, x2 = np.where(m2)
     if len(x2) > 50:

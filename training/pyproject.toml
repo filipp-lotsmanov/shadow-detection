@@ -39,11 +39,14 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+# E501: line length is handled by the formatter.
+# N806/N812: numpy-style local names (H, W) and aliased imports.
 ignore = ["E501", "N806", "N812"]
 
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "ruff>=0.6",
 ]
 
 [tool.pytest.ini_options]

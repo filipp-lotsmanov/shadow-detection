@@ -20,7 +20,6 @@ $ROOT = $PSScriptRoot
 Set-Location $ROOT
 
 function Log($msg)  { Write-Host "[run] $msg" -ForegroundColor Cyan }
-function Warn($msg) { Write-Host "[run] $msg" -ForegroundColor Yellow }
 function Err($msg)  { Write-Host "[run] $msg" -ForegroundColor Red }
 
 # Tooling -----------------------------------------------------------
@@ -63,9 +62,13 @@ function Download-Model {
 }
 
 # Backend env -------------------------------------------------------
+# `uv sync` is idempotent and quick once satisfied, so it runs every time. The
+# directory check only decides whether to warn about the download - keying the
+# install itself off it would skip repair after an interrupted first run.
 function Ensure-BackendEnv {
-    if (Test-Path "backend\.venv") { return }
-    Log "Installing backend dependencies (~200 MB CPU PyTorch + FastAPI)..."
+    if (-not (Test-Path "backend\.venv")) {
+        Log "Installing backend dependencies (~200 MB download: CPU PyTorch + FastAPI)..."
+    }
     Push-Location backend
     try {
         uv sync
@@ -76,10 +79,13 @@ function Ensure-BackendEnv {
 
 # Frontend env ------------------------------------------------------
 function Ensure-FrontendEnv {
-    if (Test-Path "frontend\node_modules") { return }
-    Log "Installing frontend dependencies (Next.js)..."
+    if (-not (Test-Path "frontend\node_modules")) {
+        Log "Installing frontend dependencies (Next.js)..."
+    }
     Push-Location frontend
     try {
+        # `npm install`, not `npm ci` - it returns in about a second when the
+        # tree already matches instead of reinstalling on every launch.
         npm install
     } finally {
         Pop-Location
@@ -100,8 +106,26 @@ Start-Process powershell -ArgumentList @(
     "Set-Location '$ROOT\backend'; uv run uvicorn app.main:app --port 8000"
 )
 
-Log "Waiting 5 seconds for backend to come up..."
-Start-Sleep -Seconds 5
+# Poll /health rather than sleeping a fixed interval, matching run.sh. Cold
+# start is dominated by importing torch and can exceed a fixed wait on a slow
+# disk or with an antivirus scanning the 100 MB model.
+function Wait-ForBackend {
+    Log "Waiting for backend to come up..."
+    foreach ($i in 1..30) {
+        try {
+            Invoke-WebRequest -Uri "http://localhost:8000/health" -UseBasicParsing `
+                -TimeoutSec 2 | Out-Null
+            Log "Backend ready."
+            return
+        } catch {
+            Start-Sleep -Seconds 1
+        }
+    }
+    Err "Backend did not respond on http://localhost:8000 within 30 seconds."
+    Err "Check the backend window for errors; the frontend will retry on its own."
+}
+
+Wait-ForBackend
 
 Log "Launching frontend in a new window..."
 Start-Process powershell -ArgumentList @(

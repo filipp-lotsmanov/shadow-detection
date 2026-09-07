@@ -115,7 +115,7 @@ def main(cfg: DictConfig) -> None:
 
     n_params = sum(p.numel() for p in model.parameters())
     print(
-        f"\nModel: {n_params/1e6:.1f}M params | "
+        f"\nModel: {n_params / 1e6:.1f}M params | "
         f"batches/epoch: {len(loader)} | "
         f"effective batch: {cfg.training.batch_size}"
     )
@@ -174,19 +174,19 @@ def main(cfg: DictConfig) -> None:
         head_lr = optimizer.param_groups[1]["lr"] if len(optimizer.param_groups) > 1 else lr
 
         print(
-            f"  Ep {epoch+1:3d}/{cfg.training.num_epochs} | "
-            f"loss={loss_total/n_seen:.4f} "
-            f"(side={loss_side_sum/n_seen:.3f} reg={loss_reg_sum/n_seen:.3f} "
-            f"dir={loss_dir_sum/n_seen:.3f}) | "
-            f"side_acc={side_correct/n_seen:.3f} dir_acc={dir_correct/n_seen:.3f} | "
+            f"  Ep {epoch + 1:3d}/{cfg.training.num_epochs} | "
+            f"loss={loss_total / n_seen:.4f} "
+            f"(side={loss_side_sum / n_seen:.3f} reg={loss_reg_sum / n_seen:.3f} "
+            f"dir={loss_dir_sum / n_seen:.3f}) | "
+            f"side_acc={side_correct / n_seen:.3f} dir_acc={dir_correct / n_seen:.3f} | "
             f"lr=({lr:.2e}, {head_lr:.2e}) | "
-            f"{epoch_time:.0f}s | elapsed {elapsed/60:.1f}m | eta {eta/60:.1f}m"
+            f"{epoch_time:.0f}s | elapsed {elapsed / 60:.1f}m | eta {eta / 60:.1f}m"
         )
 
     model_path = save_dir / "model.pth"
     torch.save(model.state_dict(), model_path)
     print(f"\nSaved: {model_path}")
-    print(f"Done in {(time.time()-t0)/60:.1f} min")
+    print(f"Done in {(time.time() - t0) / 60:.1f} min")
 
 
 if __name__ == "__main__":

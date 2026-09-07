@@ -43,7 +43,10 @@ export default function PredictionViewer({ selection, prediction, loading, error
       ctx.lineWidth = 1;
       ctx.strokeRect(offX, offY, drawW, drawH);
 
-      function drawBBox(bbox, color, label) {
+      // The ground-truth caption goes below its box and the prediction's above,
+      // so the two stay legible when the boxes nearly coincide - which is
+      // exactly what an accurate prediction looks like.
+      function drawBBox(bbox, color, label, labelBelow = false) {
         const x = offX + bbox.xmin * scale;
         const y = offY + bbox.ymin * scale;
         const w = (bbox.xmax - bbox.xmin) * scale;
@@ -55,11 +58,11 @@ export default function PredictionViewer({ selection, prediction, loading, error
         ctx.fillRect(x, y, w, h);
         ctx.fillStyle = color;
         ctx.font = "13px ui-monospace, Menlo, monospace";
-        ctx.fillText(label, x + 6, y - 8);
+        ctx.fillText(label, x + 6, labelBelow ? y + h + 16 : y - 8);
       }
 
       if (selection.groundTruth) {
-        drawBBox(selection.groundTruth, "#4ade80", "Ground truth");
+        drawBBox(selection.groundTruth, "#4ade80", "Ground truth", true);
       }
       if (prediction?.bbox) {
         drawBBox(prediction.bbox, "#f87171", "Predicted");

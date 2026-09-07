@@ -33,9 +33,22 @@ explicit = true
 torch = { index = "pytorch-cpu" }
 torchvision = { index = "pytorch-cpu" }
 
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+# E501: line length is handled by the formatter.
+# N806/N812: numpy-style local names (H, W) and aliased imports.
+# B008: FastAPI's dependency injection is expressed as a call in the argument
+#       default (`file: UploadFile = File(...)`), which is the documented idiom.
+ignore = ["E501", "N806", "N812", "B008"]
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    "ruff>=0.6",
 ]
 
 [tool.pytest.ini_options]

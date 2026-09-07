@@ -23,9 +23,10 @@ uv --version
 
 Set-Location -Path $PSScriptRoot
 
-# Wipe stale venv / lockfile from previous failed attempts
-if (Test-Path .venv)   { Remove-Item -Recurse -Force .venv }
-if (Test-Path uv.lock) { Remove-Item -Force uv.lock }
+# Wipe a stale venv from previous failed attempts. uv.lock is committed and is
+# deliberately left alone: it pins the CUDA resolution that `uv sync` reproduces
+# on the default path below.
+if (Test-Path .venv) { Remove-Item -Recurse -Force .venv }
 
 # Detect NVIDIA GPU
 $hasNvidia = $false
@@ -59,7 +60,11 @@ if (-not $hasNvidia) {
     Write-Host "=== No NVIDIA GPU detected - installing CPU PyTorch build ===" -ForegroundColor Cyan
     Write-Host "    (download is ~200 MB; training will run on CPU and be slow)"
 
+    # uv.lock is backed up alongside pyproject.toml: pointing at a different
+    # index makes the committed lock inconsistent, so `uv sync` re-resolves and
+    # rewrites it. Restoring both leaves the working tree clean either way.
     Copy-Item pyproject.toml pyproject.toml.bak
+    Copy-Item uv.lock uv.lock.bak
     try {
         (Get-Content pyproject.toml) `
             -replace 'pytorch-cu124', 'pytorch-cpu' `
@@ -68,6 +73,7 @@ if (-not $hasNvidia) {
         uv sync
     } finally {
         Move-Item -Force pyproject.toml.bak pyproject.toml
+        Move-Item -Force uv.lock.bak uv.lock
     }
 }
 

@@ -9,6 +9,7 @@ served model without raising an error anywhere else.
 from __future__ import annotations
 
 import numpy as np
+
 from shadow_detection.features import extract_geometric_features
 
 

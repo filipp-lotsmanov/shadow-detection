@@ -7,6 +7,7 @@ copy being edited without the other.
 from __future__ import annotations
 
 import numpy as np
+
 from shadow_detection.features import flip_geometric_features as train_flip
 
 

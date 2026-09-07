@@ -15,8 +15,10 @@ uv --version
 
 cd "$(dirname "$0")"
 
-# Wipe stale venv / lockfile from previous failed attempts
-rm -rf .venv uv.lock
+# Wipe a stale venv from previous failed attempts. uv.lock is committed and is
+# deliberately left alone: it pins the CUDA resolution that `uv sync` reproduces
+# on the default path below.
+rm -rf .venv
 
 # Detect NVIDIA GPU
 HAS_NVIDIA=0
@@ -35,17 +37,25 @@ sync_cuda() {
 sync_cpu() {
     echo "=== Installing CPU PyTorch build ==="
     echo "    (download is ~200 MB; training will run on CPU and be slow)"
-    # Temporarily switch the index in pyproject.toml; restore afterward so
-    # the file committed to GitHub stays CUDA-default.
+    # Temporarily switch the index in pyproject.toml; restore afterward so the
+    # files committed to GitHub stay CUDA-default. uv.lock is backed up too:
+    # pointing at a different index makes the committed lock inconsistent, so
+    # `uv sync` re-resolves and rewrites it. Restoring both leaves the working
+    # tree clean whether this path succeeds or fails.
     cp pyproject.toml pyproject.toml.bak
-    trap 'mv -f pyproject.toml.bak pyproject.toml' EXIT
+    cp uv.lock uv.lock.bak
+    restore_manifests() {
+        mv -f pyproject.toml.bak pyproject.toml 2>/dev/null || true
+        mv -f uv.lock.bak uv.lock 2>/dev/null || true
+    }
+    trap restore_manifests EXIT
     sed -i.tmp \
         -e 's|pytorch-cu124|pytorch-cpu|g' \
         -e 's|https://download.pytorch.org/whl/cu124|https://download.pytorch.org/whl/cpu|g' \
         pyproject.toml
     rm -f pyproject.toml.tmp
     uv sync
-    mv -f pyproject.toml.bak pyproject.toml
+    restore_manifests
     trap - EXIT
 }
 

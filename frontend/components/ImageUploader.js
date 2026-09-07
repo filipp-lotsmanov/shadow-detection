@@ -7,6 +7,9 @@ export default function ImageUploader({ onSelect, activeId }) {
   const inputRef = useRef(null);
   const [dragActive, setDragActive] = useState(false);
   const [samples, setSamples] = useState([]);
+  // Object URLs are held by the document until explicitly revoked, so each
+  // upload would otherwise pin its blob in memory for the whole session.
+  const objectUrls = useRef([]);
 
   useEffect(() => {
     fetch("/samples/samples.json")
@@ -15,13 +18,23 @@ export default function ImageUploader({ onSelect, activeId }) {
       .catch(() => setSamples([]));
   }, []);
 
+  useEffect(
+    () => () => {
+      objectUrls.current.forEach(URL.revokeObjectURL);
+      objectUrls.current = [];
+    },
+    []
+  );
+
   function handleFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
+    const previewUrl = URL.createObjectURL(file);
+    objectUrls.current.push(previewUrl);
     onSelect({
       id: `upload-${Date.now()}`,
       kind: "upload",
       file,
-      previewUrl: URL.createObjectURL(file),
+      previewUrl,
       groundTruth: null,
       label: file.name,
     });

@@ -17,7 +17,6 @@ cd "$ROOT"
 
 # ---------- Helpers ----------
 log() { echo -e "\033[1;36m[run]\033[0m $*"; }
-warn() { echo -e "\033[1;33m[run]\033[0m $*"; }
 err() { echo -e "\033[1;31m[run]\033[0m $*" >&2; }
 
 cleanup() {
@@ -76,11 +75,14 @@ download_model() {
 }
 
 # ---------- Backend ----------
+# `uv sync` is idempotent and quick once satisfied, so it runs every time. The
+# directory check only decides whether to warn about the download - keying the
+# install itself off it would skip repair after an interrupted first run, and
+# the launcher would then fail on a half-populated venv.
 ensure_backend_env() {
-    if [ -d backend/.venv ]; then
-        return
+    if [ ! -d backend/.venv ]; then
+        log "Installing backend dependencies (~200 MB download: CPU PyTorch + FastAPI)..."
     fi
-    log "Installing backend dependencies (~200 MB CPU PyTorch + FastAPI)..."
     cd backend
     uv sync
     cd "$ROOT"
@@ -88,11 +90,12 @@ ensure_backend_env() {
 
 # ---------- Frontend ----------
 ensure_frontend_env() {
-    if [ -d frontend/node_modules ]; then
-        return
+    if [ ! -d frontend/node_modules ]; then
+        log "Installing frontend dependencies (Next.js)..."
     fi
-    log "Installing frontend dependencies (Next.js)..."
     cd frontend
+    # `npm install` (not `npm ci`) - it returns in about a second when the tree
+    # already matches, whereas `npm ci` wipes and reinstalls on every launch.
     npm install
     cd "$ROOT"
 }

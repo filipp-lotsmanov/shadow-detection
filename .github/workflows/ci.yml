@@ -1,4 +1,4 @@
-name: tests
+name: ci
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           - package: training
             deps: numpy scipy pillow
           - package: backend
-            deps: pydantic
+            deps: pydantic pillow
     steps:
       - name: Check out the repository
         uses: actions/checkout@v6
@@ -37,9 +37,9 @@ jobs:
           enable-cache: true
 
       # The test suites are torch-free by design: the training tests need only
-      # numpy/scipy/pillow and the backend tests need only pydantic. A full
-      # `uv sync` would download the large CUDA-pinned PyTorch wheels that the
-      # tests never import, so CI installs just the dependencies they exercise.
+      # numpy/scipy/pillow and the backend tests need only pydantic/pillow. A
+      # full `uv sync` would download the large CUDA-pinned PyTorch wheels that
+      # the tests never import, so CI installs just the deps they exercise.
       - name: Create the virtual environment
         working-directory: ${{ matrix.package }}
         run: uv venv
@@ -55,3 +55,58 @@ jobs:
       - name: Run pytest
         working-directory: ${{ matrix.package }}
         run: uv run --no-sync pytest
+
+  ruff:
+    name: ${{ matrix.package }} lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [training, backend]
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: "3.10"
+          enable-cache: true
+
+      # Each package carries its own [tool.ruff] section, so ruff is run from
+      # inside the package directory to pick up the right configuration.
+      - name: Lint
+        working-directory: ${{ matrix.package }}
+        run: uvx ruff check --output-format=github .
+
+      - name: Check formatting
+        working-directory: ${{ matrix.package }}
+        run: uvx ruff format --check .
+
+  frontend:
+    name: frontend lint and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v6
+
+      - name: Install Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # `npm ci` also fails if package.json and package-lock.json disagree,
+      # which catches a dependency edit that forgot to update the lockfile.
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build

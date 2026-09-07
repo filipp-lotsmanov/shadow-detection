@@ -17,6 +17,7 @@ import pytest
 # training/tests/ -> training/ -> repo root
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_FEATURES_PATH = REPO_ROOT / "backend" / "app" / "features.py"
+BACKEND_GEOMETRY_PATH = REPO_ROOT / "backend" / "app" / "geometry.py"
 
 
 def _load_module_from_path(name: str, path: Path) -> ModuleType:
@@ -36,6 +37,17 @@ def backend_features() -> ModuleType:
     installed in the training environment. The module only needs numpy + scipy.
     """
     return _load_module_from_path("backend_app_features", BACKEND_FEATURES_PATH)
+
+
+@pytest.fixture(scope="session")
+def backend_geometry() -> ModuleType:
+    """The deployed backend's bbox reconstruction, loaded directly from its file.
+
+    Lets the training suite check that its target decomposition and the
+    backend's reconstruction are genuine inverses of each other, rather than
+    each testing its own restatement of the maths. The module is pure Python.
+    """
+    return _load_module_from_path("backend_app_geometry", BACKEND_GEOMETRY_PATH)
 
 
 @pytest.fixture(scope="session")

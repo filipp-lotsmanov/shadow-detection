@@ -61,16 +61,29 @@ export default function PredictionStats({ prediction, selection }) {
       <div className={styles.section}>
         <div className={styles.sectionLabel}>Direction</div>
         {prediction.direction === -1 ? (
-          <div className={`${styles.bigValue} ${styles.abstain}`}>
-            Abstain
-          </div>
+          <>
+            <div className={`${styles.bigValue} ${styles.abstain}`}>Abstain</div>
+            {/* Label the number as a raw class probability, not a confidence in
+                a prediction the model declined to make. */}
+            <div className={styles.confidence}>
+              peak class probability {fmt(prediction.direction_confidence * 100, 1)}%, under the
+              60% threshold
+            </div>
+            <ConfidenceBar value={prediction.direction_confidence} />
+            <div className={styles.note}>
+              Expected: this head is uninformative in the released model and abstains on every
+              input. See Limitations in the README.
+            </div>
+          </>
         ) : (
-          <div className={styles.bigValue}>{DIRECTION_LABEL[prediction.direction]}</div>
+          <>
+            <div className={styles.bigValue}>{DIRECTION_LABEL[prediction.direction]}</div>
+            <div className={styles.confidence}>
+              {fmt(prediction.direction_confidence * 100, 1)}% confidence
+            </div>
+            <ConfidenceBar value={prediction.direction_confidence} />
+          </>
         )}
-        <div className={styles.confidence}>
-          {fmt(prediction.direction_confidence * 100, 1)}% confidence
-        </div>
-        <ConfidenceBar value={prediction.direction_confidence} />
       </div>
 
       <div className={styles.section}>
