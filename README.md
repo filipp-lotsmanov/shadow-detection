@@ -7,7 +7,7 @@
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 
 > Predicting off-screen pedestrian locations from shadow imagery.
-> Winning solution for the **BrabantHack 2026 DEMCON Deep Tech track** with **IoU 0.626** on the official test set.
+> Part of the winning entry for the **BrabantHack 2026 DEMCON Deep Tech track**. The submission scored **IoU 0.626** on the official test set; it was a weighted blend of three team members' models, of which this repository is one. See [Team](#team).
 
 The task: given a single 720x480 image of a road scene where a pedestrian is *not visible in frame* but their shadow is, predict the off-screen bounding box where the pedestrian would be standing.
 
@@ -93,7 +93,7 @@ This was motivated by EDA: the x-coordinate distribution is bimodal (people are 
 
 Computed from each raw image and concatenated with the ResNet features. These were the largest single improvement during the hackathon - adding them lifted IoU from ~0.57 to ~0.62.
 
-- LAB-colorspace shadow mask + density on the road region
+- Grayscale row-median shadow mask (channel mean, thresholded at 0.85x the row median) + density on the road region (bottom 60% of the frame)
 - Shadow centroid (x, y) and spread (std_x, std_y)
 - Left/right mass ratio
 - Column-density argmax and weighted mean
@@ -110,7 +110,11 @@ The features are mirrored when the image is horizontally flipped during augmenta
 |---|---|---|
 | Baseline | ResNet-50 + 3-head decomposed regression | ~0.52 |
 | + Augmentation | Horizontal flip with side-label mirroring, larger input | ~0.57 |
-| + Geo features (final) | 19 hand-crafted features alongside ResNet | **0.626** |
+| + Geo features | 19 hand-crafted features alongside ResNet | ~0.62 |
+| Winning submission | Weighted blend of all three team members' models | **0.626** |
+
+The first three rows are this model alone. The 0.626 on the leaderboard is the
+blend, not this row's model - see [Team](#team).
 
 ### Inference (production)
 
